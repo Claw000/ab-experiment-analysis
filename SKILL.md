@@ -184,6 +184,11 @@ total_revenue = member_revenue + addon_revenue / 100  # 分→元
 - 🔷 会员指标
 - 🔸 综合指标（会员+权益包）
 
+## 作者
+
+- **Essie Wong** — 产品设计、评分框架、实战验证
+- **Claw** — 技术实现、流程沉淀
+
 ## 依赖
 
 - Python 3 + openpyxl（读xlsx）
