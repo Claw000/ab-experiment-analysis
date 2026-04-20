@@ -123,7 +123,42 @@ total_revenue = member_revenue + addon_revenue / 100  # 分→元
 total_revenue = member_revenue + addon_revenue
 ```
 
-### Step 7: 输出结论
+### Step 7: 趋势分析（判断"要不要继续跑"）
+当结果不显著时，不要直接说"继续跑"或"关掉"，先做趋势分析：
+
+```python
+# 前后半段对比：差异在扩大还是收敛？
+mid = stable_start + (len(data) - stable_start) // 2
+
+first_half_diff = np.mean(exp_first) - np.mean(ctrl_first)
+second_half_diff = np.mean(exp_second) - np.mean(ctrl_second)
+
+# 扩大 → 可能继续跑能显著
+# 收敛 → 继续跑大概率还是不显著
+```
+
+**决策框架：**
+- 差异在扩大 + p < 0.2 → 建议继续跑
+- 差异在收敛 + p > 0.3 → 建议关掉
+- 差异在收敛但用户想继续 → 尊重决策，给出预期（"大概率还是不显著"）
+
+### Step 8: MDE分析（最小可检测效应）
+帮用户理解"再跑多久能显著"：
+
+```python
+# 当前样本能检测到多大的效应？
+pooled_std = np.sqrt((np.std(ctrl)**2 + np.std(exp)**2) / 2)
+n = len(ctrl)  # 天数
+mde = 2.8 * pooled_std / np.sqrt(n)  # 80% power, alpha=0.05
+mde_pct = mde / np.mean(ctrl) * 100
+
+# 如果真实效应 < MDE，再跑多久都很难显著
+```
+
+**解读模板：**
+> 当前样本可检测最小效应为 X%。如果真实效应 < X%，再跑多久都很难显著。
+
+### Step 9: 输出结论
 
 #### 输出格式（Discord/群聊）
 
@@ -159,7 +194,9 @@ total_revenue = member_revenue + addon_revenue
 - 方向正向但不显著 → 继续跑，等样本量
 - 方向负向但不显著 → 警惕，继续观察
 - 显著负向 → 建议关掉
+- 体验显著正+收入无显著差异 → **推全**（体验提升+收入不降=纯赚）
 - 体验正+收入负 → 需要权衡，问用户优先级
+- 全部无显著 → 做趋势分析+MDE分析，给出"继续跑 vs 关掉"的建议和依据
 
 ## 关键注意事项
 
